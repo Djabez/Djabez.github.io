@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passkey Info</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stored Passkeys</h1>
+    <table id="passkeyTable">
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Credential ID</th>
+            <th>Challenge</th>
+        </tr>
+    </table>
+    <br>
+    <button id="logout">Log Out</button>
+
+    <script>
+        // Populate the table with stored passkey information
+        document.addEventListener('DOMContentLoaded', async () => {
+            const db = await openDatabase();
+            console.log("Database opened:", db);
+
+            // Debugging output: list all keys in the store
+            const transaction = db.transaction(['users'], 'readonly');
+            const store = transaction.objectStore('users');
+            const getAllRequest = store.getAll();
+
+            getAllRequest.onsuccess = event => {
+                const allUsers = event.target.result;
+                console.log("All users retrieved:", allUsers);
+
+                if (allUsers && allUsers.length > 0) {
+                    const table = document.getElementById('passkeyTable');
+
+                    // Iterate over all users and add them to the table
+                    allUsers.forEach((user, index) => {
+                        const row = table.insertRow();
+                        row.insertCell(0).innerText = user.sequentialId;
+                        row.insertCell(1).innerText = user.username;
+                        row.insertCell(2).innerText = user.credentialId;
+                        row.insertCell(3).innerText = user.challenge;
+                    });
+                } else {
+                    console.error('No stored users found.');
+                }
+            };
+            getAllRequest.onerror = event => {
+                console.error('Error retrieving users:', event.target.error);
+            };
+          
+        });
+
+        // Handle log out
+        document.getElementById('logout').addEventListener('click', () => {
+            // Clear session or local storage if necessary
+            window.location.href = 'index.html'; // Redirect back to the login page
+        });
+
+        // Reuse the openDatabase and getUser functions from the previous script
+        function openDatabase() {
+            return new Promise((resolve, reject) => {
+            const request = indexedDB.open('webauthn-demo', 1);
+        
+            request.onupgradeneeded = event => {
+                const db = event.target.result;
+                const userStore = db.objectStoreNames.contains('users') ? 
+                                event.target.transaction.objectStore('users') : 
+                                db.createObjectStore('users', { keyPath: 'id' });
+                if (!userStore.indexNames.contains('username')) {
+                    userStore.createIndex('username', 'username', { unique: false });
+                }
+            };
+            request.onsuccess = event => resolve(event.target.result);
+            request.onerror = event => reject(event.target.error);
+        });
+        }
+
+    </script>
+</body>
+</html>
