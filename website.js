@@ -56,7 +56,6 @@ const storeUser = (db, data) => {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['users'], 'readwrite');
         const store = transaction.objectStore('users');
-        // const request = store.put({ id, ...data });
         const request =store.add(data);
         request.onsuccess = () => resolve();
         request.onerror = event => reject(event.target.error);
@@ -125,11 +124,11 @@ document.getElementById('register').addEventListener('click', async () => {
         const countRequest = store.count();
 
         countRequest.onsuccess = async function() {
-            const sequentialId = countRequest.result + 1;
+            // const sequentialId = countRequest.result + 1;
 
             // Store credential in IndexedDB
             await storeUser(db, {
-                sequentialId: sequentialId,
+                // sequentialId: sequentialId,
                 username: username,
                 credentialId: bufferToBase64(credential.rawId),
                 challenge: bufferToBase64(challenge)
