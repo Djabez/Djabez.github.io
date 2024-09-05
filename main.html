@@ -52,7 +52,7 @@
                     // Iterate over all users and add them to the table
                     allUsers.forEach((user, index) => {
                         const row = table.insertRow();
-                        row.insertCell(0).innerText = user.sequentialId;
+                        row.insertCell(0).innerText = index;
                         row.insertCell(1).innerText = user.username;
                         row.insertCell(2).innerText = user.credentialId;
                         row.insertCell(3).innerText = user.challenge;
